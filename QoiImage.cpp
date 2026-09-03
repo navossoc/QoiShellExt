@@ -69,6 +69,23 @@ namespace qoiimg
         if (size > static_cast<size_t>(INT_MAX))
             return E_OUTOFMEMORY;
 
+        // qoi.h allocates width * height * 4 straight from the header, before
+        // it reads a single chunk, and its own guard allows 400 million pixels.
+        // A 26 byte file claiming 20000x19999 therefore costs 1.5 GB before
+        // failing, and the shell decodes several files at once. The densest
+        // chunk is QOI_OP_RUN at 62 pixels per byte, which bounds how far the
+        // payload can possibly expand.
+        const size_t claimed =
+            (static_cast<size_t>(data[4]) << 24 | static_cast<size_t>(data[5]) << 16 |
+             static_cast<size_t>(data[6]) << 8 | static_cast<size_t>(data[7])) *
+            (static_cast<size_t>(data[8]) << 24 | static_cast<size_t>(data[9]) << 16 |
+             static_cast<size_t>(data[10]) << 8 | static_cast<size_t>(data[11]));
+        const size_t payload = (size > QOI_HEADER_SIZE + sizeof(qoi_padding))
+            ? size - QOI_HEADER_SIZE - sizeof(qoi_padding)
+            : 0;
+        if (claimed == 0 || claimed > payload * 62)
+            return E_FAIL;
+
         qoi_desc desc = {};
         BYTE* pixels = static_cast<BYTE*>(
             qoi_decode(data, static_cast<int>(size), &desc, 4));

@@ -1,0 +1,34 @@
+# Build output
+build/
+dist/
+
+# MSVC intermediates
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.exp
+*.lib
+*.res
+*.iobj
+*.ipdb
+*.tlog/
+
+# Binaries
+*.dll
+*.exe
+
+# Test artifacts
+out.bmp
+out.png
+*.qoi
+
+# Visual Studio / VS Code
+.vs/
+*.user
+*.suo
+*.vcxproj.user
+
+# OS
+Thumbs.db
+desktop.ini
